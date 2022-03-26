@@ -1,0 +1,3 @@
+[submodule "SpaceWireCODEC"]
+	path = SpaceWireCODEC
+	url = https://github.com/StellarSpaceSystems/SpaceWireCODEC
