@@ -23,7 +23,6 @@
 -------------------------------------------------------------------------------
 
 library work;
-use work.SpaceWireRouterIPConfigurationPackage.all;
 use work.SpaceWireRouterIPPackage.all;
 use work.SpaceWireCODECIPPackage.all;
 

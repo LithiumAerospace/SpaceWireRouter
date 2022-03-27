@@ -10,7 +10,6 @@ Open-source SpaceWire Router IP Core 6Port Version  Ver 1.21           2014/06/2
 SpaceWireCODECIPSynchronizeOnePulse.vhdl           Ver 1.20
 SpaceWireRouterIP.vhdl                             Ver 1.20
 SpaceWireRouterIPArbiter7x7.vhdl                   Ver 1.21       2014/06/25
-SpaceWireRouterIPConfigurationPackage.vhdl         Ver 1.20
 SpaceWireRouterIPCreditCount.vhdl                  Ver 1.20
 SpaceWireRouterIPLatchedPulse.vhdl                 Ver 1.20
 SpaceWireRouterIPLatchedPulse8.vhdl                Ver 1.20
@@ -43,6 +42,3 @@ defaultRouteID.mif                                 Ver 1.20
 crcRomAltera.vhd                                   Ver 1.20
 Ram32x256XAltera.vhd                               Ver 1.20
 *******************************************************************************
-
-
-

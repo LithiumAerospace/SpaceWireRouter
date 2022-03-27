@@ -29,7 +29,6 @@ use ieee.numeric_std.all;
 library work;
 use work.SpaceWireCODECIPPackage.all;
 use work.SpaceWireRouterIPPackage.all;
-use work.SpaceWireRouterIPConfigurationPackage.all;
 
 entity SpaceWireRouterIPSpaceWirePort is
     generic (

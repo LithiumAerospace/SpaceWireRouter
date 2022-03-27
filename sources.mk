@@ -8,7 +8,6 @@ SPACEWIREROUTER_SOURCES=\
   hdl/SpaceWireRouterIPArbiter.vhdl \
   hdl/SpaceWireRouterIPRMAPPort.vhdl \
   hdl/SpaceWireRouterIPTimeOutCount.vhdl \
-  hdl/SpaceWireRouterIPConfigurationPackage.vhdl \
   hdl/SpaceWireRouterIPRouterControlRegister.vhdl \
   hdl/SpaceWireRouterIPTimeOutEEP.vhdl \
   hdl/SpaceWireRouterIPCreditCount.vhdl \
