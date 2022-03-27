@@ -149,7 +149,7 @@ end SpaceWireRouterIPRoundArbiter;
 
 architecture behavioral of SpaceWireRouterIPRoundArbiter is
     signal iGranted     : std_logic_vector (cNumberOfInternalPort - 1 downto 0);
-    signal iLastGranted : std_logic_vector (3 downto 0);
+    signal iLastGranted : std_logic_vector (4 downto 0);
     signal iRequest     : std_logic_vector (cNumberOfInternalPort - 1 downto 0);
     signal ioccupied    : std_logic;
 begin
@@ -162,17 +162,17 @@ begin
     begin
         if (reset = '1') then
             iGranted     <= (others => '0');
-            iLastGranted <= "0000";
+            iLastGranted <= (others => '0');
 
         elsif (clock'event and clock = '1') then
             if ioccupied = '0' then
                 for i in 0 to cNumberOfInternalPort - 1 loop
-                    if (iLastGranted = std_logic_vector(to_unsigned(i, 4))) then
+                    if (iLastGranted = std_logic_vector(to_unsigned(i, 5))) then
                         for j in 0 to cNumberOfInternalPort - 1 loop
                             if iRequest((j + i + 1) mod cNumberOfInternalPort) = '1' then
                                 iGranted     <= (others => '0');
                                 iGranted((j + i + 1) mod cNumberOfInternalPort)  <= '1';
-                                iLastGranted <= std_logic_vector(to_unsigned((j + i + 1) mod cNumberOfInternalPort, 4));
+                                iLastGranted <= std_logic_vector(to_unsigned((j + i + 1) mod cNumberOfInternalPort, 5));
                             end if;
                         end loop;
                     end if;
