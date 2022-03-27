@@ -33,11 +33,12 @@ use ieee.numeric_std.all;
 
 entity SpaceWireRouterIPRouterControlRegister is
     port (
+        -- Clock & Reset
         clock                       : in  std_logic;
         reset                       : in  std_logic;
         transmitClock               : in  std_logic;
         receiveClock                : in  std_logic;
---
+        -- Bus i/f
         writeData                   : in  std_logic_vector (31 downto 0);
         readData                    : out std_logic_vector (31 downto 0);
         acknowledge                 : out std_logic;
@@ -47,72 +48,27 @@ entity SpaceWireRouterIPRouterControlRegister is
         writeEnable                 : in  std_logic;
         dataByteEnable              : in  std_logic_vector (3 downto 0);
         requestPort                 : in  std_logic_vector (7 downto 0);
+        -- switch info
+        linkUp                      : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
+        -- Link Status/Control
+        linkControl                 : out bit16xPortArray;
+        linkStatus                  : in  bit8XPortArray;
+        errorStatus                 : in  bit8XPortArray;
+        linkReset                   : out std_logic_vector (cNumberOfInternalPort - 1 downto 0);
 --
-        linkUp                      : in  std_logic_vector (6 downto 0);
+        creditCount                 : in  unsigned6xPortArray;
+        outstandingCount            : in  unsigned6xPortArray;
+        timeOutCount                : in  unsigned16xPort;
 --
-        linkControl1                : out std_logic_vector (15 downto 0);
-        linkStatus1                 : in  std_logic_vector (7 downto 0);
-        errorStatus1                : in  std_logic_vector (7 downto 0);
-        linkReset1                  : out std_logic;
---
-        linkControl2                : out std_logic_vector (15 downto 0);
-        linkStatus2                 : in  std_logic_vector (7 downto 0);
-        errorStatus2                : in  std_logic_vector (7 downto 0);
-        linkReset2                  : out std_logic;
---
-        linkControl3                : out std_logic_vector (15 downto 0);
-        linkStatus3                 : in  std_logic_vector (7 downto 0);
-        errorStatus3                : in  std_logic_vector (7 downto 0);
-        linkReset3                  : out std_logic;
---
-        linkControl4                : out std_logic_vector (15 downto 0);
-        linkStatus4                 : in  std_logic_vector (7 downto 0);
-        errorStatus4                : in  std_logic_vector (7 downto 0);
-        linkReset4                  : out std_logic;
---
-        linkControl5                : out std_logic_vector (15 downto 0);
-        linkStatus5                 : in  std_logic_vector (7 downto 0);
-        errorStatus5                : in  std_logic_vector (7 downto 0);
-        linkReset5                  : out std_logic;
---
-        linkControl6                : out std_logic_vector (15 downto 0);
-        linkStatus6                 : in  std_logic_vector (7 downto 0);
-        errorStatus6                : in  std_logic_vector (7 downto 0);
-        linkReset6                  : out std_logic;
---
-        creditCount1                : in  unsigned (5 downto 0);
-        creditCount2                : in  unsigned (5 downto 0);
-        creditCount3                : in  unsigned (5 downto 0);
-        creditCount4                : in  unsigned (5 downto 0);
-        creditCount5                : in  unsigned (5 downto 0);
-        creditCount6                : in  unsigned (5 downto 0);
-        outstandingCount1           : in  unsigned (5 downto 0);
-        outstandingCount2           : in  unsigned (5 downto 0);
-        outstandingCount3           : in  unsigned (5 downto 0);
-        outstandingCount4           : in  unsigned (5 downto 0);
-        outstandingCount5           : in  unsigned (5 downto 0);
-        outstandingCount6           : in  unsigned (5 downto 0);
-        timeOutCount0               : in  unsigned (15 downto 0);
-        timeOutCount1               : in  unsigned (15 downto 0);
-        timeOutCount2               : in  unsigned (15 downto 0);
-        timeOutCount3               : in  unsigned (15 downto 0);
-        timeOutCount4               : in  unsigned (15 downto 0);
-        timeOutCount5               : in  unsigned (15 downto 0);
-        timeOutCount6               : in  unsigned (15 downto 0);
-        dropCount0                  : in  unsigned (15 downto 0);
-        dropCount1                  : in  unsigned (15 downto 0);
-        dropCount2                  : in  unsigned (15 downto 0);
-        dropCount3                  : in  unsigned (15 downto 0);
-        dropCount4                  : in  unsigned (15 downto 0);
-        dropCount5                  : in  unsigned (15 downto 0);
-        dropCount6                  : in  unsigned (15 downto 0);
+        dropCount                   : in  unsigned16xPort;
         dropCouterClear             : out std_logic;
 --
         timeOutEnable               : out std_logic;
         timeOutCountValue           : out std_logic_vector (19 downto 0);
 --
         receiveTimeCode             : in  std_logic_vector (7 downto 0);
-        transmitTimeCodeEnable      : out std_logic_vector (6 downto 0);
+        transmitTimeCodeEnable      : out std_logic_vector (cNumberOfInternalPort - 1 downto 0);
+--
         port0TargetLogicalAddress   : out std_logic_vector (7 downto 0);
         port0RMAPKey                : out std_logic_vector (7 downto 0);
         port0CRCRevision            : out std_logic;
@@ -120,14 +76,8 @@ entity SpaceWireRouterIPRouterControlRegister is
         autoTimeCodeValue           : in  std_logic_vector(7 downto 0);
         autoTimeCodeCycleTime       : out std_logic_vector(31 downto 0);
 --
-        statisticalInformation1     : in  bit32X8Array;
-        statisticalInformation2     : in  bit32X8Array;
-        statisticalInformation3     : in  bit32X8Array;
-        statisticalInformation4     : in  bit32X8Array;
-        statisticalInformation5     : in  bit32X8Array;
-        statisticalInformation6     : in  bit32X8Array;
+        statisticalInformation      : in  statisticalInformationArray;
         statisticalInformationClear : out std_logic
-
         );
 end SpaceWireRouterIPRouterControlRegister;
 
@@ -169,46 +119,20 @@ architecture behavioral of SpaceWireRouterIPRouterControlRegister is
     signal iLowAddress38                               : std_logic;
     signal iLowAddress3C                               : std_logic;
 --
-    signal iSelectStatisticalInformation0              : std_logic;
-    signal iSelectStatisticalInformation1              : std_logic;
-    signal iSelectStatisticalInformation2              : std_logic;
-    signal iSelectStatisticalInformation3              : std_logic;
-    signal iSelectStatisticalInformation4              : std_logic;
-    signal iSelectStatisticalInformation5              : std_logic;
-    signal iSelectStatisticalInformation6              : std_logic;
+    signal iSelectStatisticalInformation               : std_logic_vector (cNumberOfInternalPort - 1 downto 0);
 --
     signal iSelectIDRegister                           : std_logic;
     signal iSelectRouterRegister                       : std_logic;
 --
     --Register.
-    signal iLinkControlRegister1                       : std_logic_vector (15 downto 0);
-    signal iLinkControlRegister2                       : std_logic_vector (15 downto 0);
-    signal iLinkControlRegister3                       : std_logic_vector (15 downto 0);
-    signal iLinkControlRegister4                       : std_logic_vector (15 downto 0);
-    signal iLinkControlRegister5                       : std_logic_vector (15 downto 0);
-    signal iLinkControlRegister6                       : std_logic_vector (15 downto 0);
-    signal iSoftWareLinkReset1                         : std_logic;
-    signal iSoftWareLinkReset2                         : std_logic;
-    signal iSoftWareLinkReset3                         : std_logic;
-    signal iSoftWareLinkReset4                         : std_logic;
-    signal iSoftWareLinkReset5                         : std_logic;
-    signal iSoftWareLinkReset6                         : std_logic;
+    signal iLinkControlRegister                        : bit16xPortArray;
+    signal iSoftWareLinkReset                          : std_logic_vector (cNumberOfInternalPort - 1 downto 0);
 --
-    signal errorStatusRegister1                        : std_logic_vector (7 downto 0);
-    signal errorStatusRegister2                        : std_logic_vector (7 downto 0);
-    signal errorStatusRegister3                        : std_logic_vector (7 downto 0);
-    signal errorStatusRegister4                        : std_logic_vector (7 downto 0);
-    signal errorStatusRegister5                        : std_logic_vector (7 downto 0);
-    signal errorStatusRegister6                        : std_logic_vector (7 downto 0);
+    signal errorStatusRegister                         : bit8XPortArray;
 --
-    signal iErrorStatusClear1                          : std_logic;
-    signal iErrorStatusClear2                          : std_logic;
-    signal iErrorStatusClear3                          : std_logic;
-    signal iErrorStatusClear4                          : std_logic;
-    signal iErrorStatusClear5                          : std_logic;
-    signal iErrorStatusClear6                          : std_logic;
+    signal iErrorStatusClear                           : std_logic_vector (cNumberOfInternalPort - 1 downto 0);
     signal iRouterIDRegister                           : std_logic_vector (31 downto 0) := (others => '0');
-    signal iTimeCodeEnableRegister                     : std_logic_vector (6 downto 0);
+    signal iTimeCodeEnableRegister                     : std_logic_vector (cNumberOfInternalPort - 1 downto 0);
     signal iTimeOutEnableRegister                      : std_logic;
     signal iTimeOutCountValueRegister                  : std_logic_vector (19 downto 0);
 --
@@ -287,13 +211,10 @@ begin
     iSelectOldIDRegister           <= '1' when address (13 downto 8) = "00" & x"4"               else '0';
     iSelectRouterRegister          <= '1' when address (13 downto 8) = "00" & x"9"               else '0';
 --
-    iSelectStatisticalInformation0 <= '1' when address (13 downto 8) = "1" & cPort00             else '0';
-    iSelectStatisticalInformation1 <= '1' when address (13 downto 8) = "1" & cPort01             else '0';
-    iSelectStatisticalInformation2 <= '1' when address (13 downto 8) = "1" & cPort02             else '0';
-    iSelectStatisticalInformation3 <= '1' when address (13 downto 8) = "1" & cPort03             else '0';
-    iSelectStatisticalInformation4 <= '1' when address (13 downto 8) = "1" & cPort04             else '0';
-    iSelectStatisticalInformation5 <= '1' when address (13 downto 8) = "1" & cPort05             else '0';
-    iSelectStatisticalInformation6 <= '1' when address (13 downto 8) = "1" & cPort06             else '0';
+    select_gen : for i in 1 to (cNumberOfInternalPort - 1) generate
+      iSelectStatisticalInformation (i) <= '1' when address (13 downto 8) = "1" & cPort(i) else '0';
+    end generate;
+
 ------------------------------------------------------------------------------------------------------------
     -- Lower 8bit.
     iLowAddress00                  <= '1' when address (7 downto 2) = cReserve00 & cLowAddress00 else '0';
@@ -317,61 +238,17 @@ begin
     timeOutEnable     <= iTimeOutEnableRegister;
     timeOutCountValue <= iTimeOutCountValueRegister;
 
-    errorStatus01 : SpaceWireRouterIPLatchedPulse8 port map (
-        clock          => clock,
-        transmitClock  => transmitClock,
-        receiveClock   => receiveClock,
-        reset          => reset,
-        asynchronousIn => errorStatus1,
-        latchedOut     => errorStatusRegister1,
-        latchClear     => iErrorStatusClear1
-        );
-    errorStatus02 : SpaceWireRouterIPLatchedPulse8 port map (
-        clock          => clock,
-        transmitClock  => transmitClock,
-        receiveClock   => receiveClock,
-        reset          => reset,
-        asynchronousIn => errorStatus2,
-        latchedOut     => errorStatusRegister2,
-        latchClear     => iErrorStatusClear2
-        );
-    errorStatus03 : SpaceWireRouterIPLatchedPulse8 port map (
-        clock          => clock,
-        transmitClock  => transmitClock,
-        receiveClock   => receiveClock,
-        reset          => reset,
-        asynchronousIn => errorStatus3,
-        latchedOut     => errorStatusRegister3,
-        latchClear     => iErrorStatusClear3
-        );
-    errorStatus04 : SpaceWireRouterIPLatchedPulse8 port map (
-        clock          => clock,
-        transmitClock  => transmitClock,
-        receiveClock   => receiveClock,
-        reset          => reset,
-        asynchronousIn => errorStatus4,
-        latchedOut     => errorStatusRegister4,
-        latchClear     => iErrorStatusClear4
-        );
-    errorStatus05 : SpaceWireRouterIPLatchedPulse8 port map (
-        clock          => clock,
-        transmitClock  => transmitClock,
-        receiveClock   => receiveClock,
-        reset          => reset,
-        asynchronousIn => errorStatus5,
-        latchedOut     => errorStatusRegister5,
-        latchClear     => iErrorStatusClear5
-        );
-    errorStatus06 : SpaceWireRouterIPLatchedPulse8 port map (
-        clock          => clock,
-        transmitClock  => transmitClock,
-        receiveClock   => receiveClock,
-        reset          => reset,
-        asynchronousIn => errorStatus6,
-        latchedOut     => errorStatusRegister6,
-        latchClear     => iErrorStatusClear6
-        );
-
+    errorStatus_gen : for i in 1 to (cNumberOfInternalPort - 1) generate
+        errorStatus_item : SpaceWireRouterIPLatchedPulse8 port map (
+            clock          => clock,
+            transmitClock  => transmitClock,
+            receiveClock   => receiveClock,
+            reset          => reset,
+            asynchronousIn => errorStatus(i),
+            latchedOut     => errorStatusRegister(i),
+            latchClear     => iErrorStatusClear(i)
+            );
+    end generate;
 
     transmitTimeCodeEnable <= iTimeCodeEnableRegister;
 
@@ -387,25 +264,13 @@ begin
             iDataInBuffer                               <= (others => '0');
             iStatisticalBuffer1                         <= (others => '0');
             iStatisticalBuffer2                         <= (others => '0');
-            iLinkControlRegister1                       <= "00" & cRunStateTransmitClockDivideValue & x"05";
-            iLinkControlRegister2                       <= "00" & cRunStateTransmitClockDivideValue & x"05";
-            iLinkControlRegister3                       <= "00" & cRunStateTransmitClockDivideValue & x"05";
-            iLinkControlRegister4                       <= "00" & cRunStateTransmitClockDivideValue & x"05";
-            iLinkControlRegister5                       <= "00" & cRunStateTransmitClockDivideValue & x"05";
-            iLinkControlRegister6                       <= "00" & cRunStateTransmitClockDivideValue & x"05";
-            iSoftWareLinkReset1                         <= '0';
-            iSoftWareLinkReset2                         <= '0';
-            iSoftWareLinkReset3                         <= '0';
-            iSoftWareLinkReset4                         <= '0';
-            iSoftWareLinkReset5                         <= '0';
-            iSoftWareLinkReset6                         <= '0';
-            iErrorStatusClear1                          <= '0';
-            iErrorStatusClear2                          <= '0';
-            iErrorStatusClear3                          <= '0';
-            iErrorStatusClear4                          <= '0';
-            iErrorStatusClear5                          <= '0';
-            iErrorStatusClear6                          <= '0';
-            iTimeOutEnableRegister                      <= '0';
+
+            reset_gen : for i in 1 to cNumberOfInternalPort - 1 loop
+              iLinkControlRegister(i)                       <= "00" & cRunStateTransmitClockDivideValue & x"05";
+            end loop;
+
+            iSoftWareLinkReset                          <= (others => '0');
+            iErrorStatusClear                           <= (others => '0');
             iTimeOutCountValueRegister                  <= (others => '0');
             iTimeOutEnableRegister                      <= cWatchdogTimerEnable;
             iTimeCodeEnableRegister                     <= cTransmitTimeCodeEnable;
@@ -434,260 +299,54 @@ begin
                     ----------------------------------------------------------------------
                 when busStateRead0 =>
 
-                    if (iSelectStatisticalInformation1 = '1' and iLowAddress00 = '1') then
-                        -- Port-1 Link Control/Status Register.
-                        iStatisticalBuffer1 <= iLinkControlRegister1 & errorStatusRegister1 & linkStatus1;
-                        iErrorStatusClear1  <= '1';
+                    for i in 1 to cNumberOfInternalPort - 1 loop
+                        if (iSelectStatisticalInformation(i) = '1' and iLowAddress00 = '1') then
+                            -- Port-1 Link Control/Status Register.
+                            iStatisticalBuffer1 <= iLinkControlRegister(i) & errorStatusRegister(i) & linkStatus(i);
+                            iErrorStatusClear(i)  <= '1';
 
-                    elsif (iSelectStatisticalInformation1 = '1' and iLowAddress04 = '1') then
-                        -- Port-1 Link Status Register2.
-                        iStatisticalBuffer1 <= x"0000" & "00" & std_logic_vector(outstandingCount1) & "00" & std_logic_vector(creditCount1);
+                        elsif (iSelectStatisticalInformation(i) = '1' and iLowAddress04 = '1') then
+                            -- Port-1 Link Status Register2.
+                            iStatisticalBuffer1 <= x"0000" & "00" & std_logic_vector(outstandingCount(i)) & "00" & std_logic_vector(creditCount(i));
 
-                    elsif (iSelectStatisticalInformation1 = '1' and iLowAddress08 = '1') then
-                        -- Port-1 Link Status Register3.
-                        iStatisticalBuffer1 (15 downto 0)  <= std_logic_vector(timeOutCount1);
-                        iStatisticalBuffer1 (31 downto 16) <= std_logic_vector(dropCount1);
+                        elsif (iSelectStatisticalInformation(i) = '1' and iLowAddress08 = '1') then
+                            -- Port-1 Link Status Register3.
+                            iStatisticalBuffer1 (15 downto 0)  <= std_logic_vector(timeOutCount(i));
+                            iStatisticalBuffer1 (31 downto 16) <= std_logic_vector(dropCount(i));
 
-                    elsif (iSelectStatisticalInformation1 = '1' and iLowAddress0C = '1') then
-                        -- port1 statisticalInformation Receive EOP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation1(1));
-                    elsif (iSelectStatisticalInformation1 = '1' and iLowAddress10 = '1') then
-                        -- port1 statisticalInformation Transmit EOP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation1(0));
-                    elsif (iSelectStatisticalInformation1 = '1' and iLowAddress14 = '1') then
-                        -- port1 statisticalInformation Receive EEP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation1(3));
-                    elsif (iSelectStatisticalInformation1 = '1' and iLowAddress18 = '1') then
-                        -- port1 statisticalInformation Transmit EEP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation1(2));
-                    elsif (iSelectStatisticalInformation1 = '1' and iLowAddress1C = '1') then
-                        -- port1 statisticalInformation Receive Byte Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation1(5));
-                    elsif (iSelectStatisticalInformation1 = '1' and iLowAddress20 = '1') then
-                        -- port1 statisticalInformation Transmit Byte Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation1(4));
-                    elsif (iSelectStatisticalInformation1 = '1' and iLowAddress24 = '1') then
-                        -- port1 statisticalInformation LinkUp Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation1(6));
-                    elsif (iSelectStatisticalInformation1 = '1' and iLowAddress28 = '1') then
-                        -- port1 statisticalInformation LinkDown Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation1(7));
-
---**************************************************************************************
-
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress00 = '1') then
-                        -- Port-2 Link Control/Status Register.
-                        iStatisticalBuffer1 <= iLinkControlRegister2 & errorStatusRegister2 & linkStatus2;
-                        iErrorStatusClear2  <= '1';
-
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress04 = '1') then
-                        -- Port-2 Link Status Register2.
-                        iStatisticalBuffer1 <= x"0000" & "00" & std_logic_vector(outstandingCount2) & "00" & std_logic_vector(creditCount2);
-
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress08 = '1') then
-                        -- Port-2 Link Status Register3.
-                        iStatisticalBuffer1 (15 downto 0)  <= std_logic_vector(timeOutCount2);
-                        iStatisticalBuffer1 (31 downto 16) <= std_logic_vector(dropCount2);
-
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress0C = '1') then
-                        -- port2 statisticalInformation Receive EOP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation2(1));
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress10 = '1') then
-                        -- port2 statisticalInformation Transmit EOP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation2(0));
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress14 = '1') then
-                        -- port2 statisticalInformation Receive EEP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation2(3));
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress18 = '1') then
-                        -- port2 statisticalInformation Transmit EEP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation2(2));
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress1C = '1') then
-                        -- port2 statisticalInformation Receive Byte Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation2(5));
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress20 = '1') then
-                        -- port2 statisticalInformation Transmit Byte Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation2(4));
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress24 = '1') then
-                        -- port2 statisticalInformation LinkUp Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation2(6));
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress28 = '1') then
-                        -- port2 statisticalInformation LinkDown Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation2(7));
+                        elsif (iSelectStatisticalInformation(i) = '1' and iLowAddress0C = '1') then
+                            -- port1 statisticalInformation Receive EOP Register.
+                            iStatisticalBuffer1 <= std_logic_vector(statisticalInformation(i)(1));
+                        elsif (iSelectStatisticalInformation(i) = '1' and iLowAddress10 = '1') then
+                            -- port1 statisticalInformation Transmit EOP Register.
+                            iStatisticalBuffer1 <= std_logic_vector(statisticalInformation(i)(0));
+                        elsif (iSelectStatisticalInformation(i) = '1' and iLowAddress14 = '1') then
+                            -- port1 statisticalInformation Receive EEP Register.
+                            iStatisticalBuffer1 <= std_logic_vector(statisticalInformation(i)(3));
+                        elsif (iSelectStatisticalInformation(i) = '1' and iLowAddress18 = '1') then
+                            -- port1 statisticalInformation Transmit EEP Register.
+                            iStatisticalBuffer1 <= std_logic_vector(statisticalInformation(i)(2));
+                        elsif (iSelectStatisticalInformation(i) = '1' and iLowAddress1C = '1') then
+                            -- port1 statisticalInformation Receive Byte Register.
+                            iStatisticalBuffer1 <= std_logic_vector(statisticalInformation(i)(5));
+                        elsif (iSelectStatisticalInformation(i) = '1' and iLowAddress20 = '1') then
+                            -- port1 statisticalInformation Transmit Byte Register.
+                            iStatisticalBuffer1 <= std_logic_vector(statisticalInformation(i)(4));
+                        elsif (iSelectStatisticalInformation(i) = '1' and iLowAddress24 = '1') then
+                            -- port1 statisticalInformation LinkUp Register.
+                            iStatisticalBuffer1 <= std_logic_vector(statisticalInformation(i)(6));
+                        elsif (iSelectStatisticalInformation(i) = '1' and iLowAddress28 = '1') then
+                            -- port1 statisticalInformation LinkDown Register.
+                            iStatisticalBuffer1 <= std_logic_vector(statisticalInformation(i)(7));
+                        end if;
+                    end loop;
 
 --**************************************************************************************
 
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress00 = '1') then
-                        -- Port-3 Link Control/Status Register.
-                        iStatisticalBuffer1 <= iLinkControlRegister3 & errorStatusRegister3 & linkStatus3;
-                        iErrorStatusClear3  <= '1';
-
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress04 = '1') then
-                        -- Port-3 Link Status Register2.
-                        iStatisticalBuffer1 <= x"0000" &"00" & std_logic_vector(outstandingCount3) & "00" & std_logic_vector(creditCount3);
-
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress08 = '1') then
-                        -- Port-3 Link Status Register3.
-                        iStatisticalBuffer1 (15 downto 0)  <= std_logic_vector(timeOutCount3);
-                        iStatisticalBuffer1 (31 downto 16) <= std_logic_vector(dropCount3);
-
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress0C = '1') then
-                        -- port3 statisticalInformation Receive EOP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation3(1));
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress10 = '1') then
-                        -- port3 statisticalInformation Transmit EOP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation3(0));
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress14 = '1') then
-                        -- port3 statisticalInformation Receive EEP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation3(3));
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress18 = '1') then
-                        -- port3 statisticalInformation Transmit EEP Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation3(2));
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress1C = '1') then
-                        -- port3 statisticalInformation Receive Byte Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation3(5));
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress20 = '1') then
-                        -- port3 statisticalInformation Transmit Byte Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation3(4));
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress24 = '1') then
-                        -- port3 statisticalInformation Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation3(6));
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress28 = '1') then
-                        -- port3 statisticalInformation Register.
-                        iStatisticalBuffer1 <= std_logic_vector(statisticalInformation3(7));
-
---**************************************************************************************
-
-
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress00 = '1') then
-                        -- Port-4 Link Control/Status Register.
-                        iStatisticalBuffer2 <= iLinkControlRegister4 & errorStatusRegister4 & linkStatus4;
-                        iErrorStatusClear4  <= '1';
-
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress04 = '1') then
-                        -- Port-4 Link Status Register2.
-                        iStatisticalBuffer2 <= x"0000" &"00" & std_logic_vector(outstandingCount4) & "00" & std_logic_vector(creditCount4);
-
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress08 = '1') then
-                        -- Port-4 Link Status Register3.
-                        iStatisticalBuffer2 (15 downto 0)  <= std_logic_vector(timeOutCount4);
-                        iStatisticalBuffer2 (31 downto 16) <= std_logic_vector(dropCount4);
-
-
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress0C = '1') then
-                        --port4 statisticalInformation Receive EOP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation4(1));
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress10 = '1') then
-                        --port4 statisticalInformation Transmit EOP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation4(0));
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress14 = '1') then
-                        --port4 statisticalInformation Receive EEP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation4(3));
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress18 = '1') then
-                        --port4 statisticalInformation Transmit EEP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation4(2));
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress1C = '1') then
-                        --port4 statisticalInformation Receive Byte Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation4(5));
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress20 = '1') then
-                        --port4 statisticalInformation Transmit Byte Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation4(4));
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress24 = '1') then
-                        --port4 statisticalInformation LinkUp Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation4(6));
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress28 = '1') then
-                        --port4 statisticalInformation LinkDown Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation4(7));
-
---**************************************************************************************
-
-
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress00 = '1') then
-                        -- Port-5 Link Control/Status Register.
-                        iStatisticalBuffer2 <= iLinkControlRegister5 & errorStatusRegister5 & linkStatus5;
-                        iErrorStatusClear5  <= '1';
-
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress04 = '1') then
-                        -- Port-5 Link Status Register2.
-                        iStatisticalBuffer2 <= x"0000" &"00" & std_logic_vector(outstandingCount5) & "00" & std_logic_vector(creditCount5);
-
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress08 = '1') then
-                        -- Port-5 Link Status Register3.
-                        iStatisticalBuffer2 (15 downto 0)  <= std_logic_vector(timeOutCount5);
-                        iStatisticalBuffer2 (31 downto 16) <= std_logic_vector(dropCount5);
-
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress0C = '1') then
-                        --port5 statisticalInformation Receive EOP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation5(1));
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress10 = '1') then
-                        --port5 statisticalInformation Transmit EOP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation5(0));
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress14 = '1') then
-                        --port5 statisticalInformation Receive EEP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation5(3));
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress18 = '1') then
-                        --port5 statisticalInformation Transmit EEP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation5(2));
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress1C = '1') then
-                        --port5 statisticalInformation Receive Byte Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation5(5));
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress20 = '1') then
-                        --port5 statisticalInformation Transmit Byte Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation5(4));
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress24 = '1') then
-                        --port5 statisticalInformation LinkUp Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation5(6));
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress28 = '1') then
-                        --port5 statisticalInformation LinkDown Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation5(7));
-
---**************************************************************************************
-
-
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress00 = '1') then
-                        -- Port-6 Link Control/Status Register.
-                        iStatisticalBuffer2 <= iLinkControlRegister6 & errorStatusRegister6 & linkStatus6;
-                        iErrorStatusClear6  <= '1';
-
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress04 = '1') then
-                        -- Port-6 Link Status Register2.
-                        iStatisticalBuffer2 <= x"0000" &"00" & std_logic_vector(outstandingCount6) & "00" & std_logic_vector(creditCount6);
-
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress08 = '1') then
-                        -- Port-6 Link Status Register3.
-                        iStatisticalBuffer2 (15 downto 0)  <= std_logic_vector(timeOutCount6);
-                        iStatisticalBuffer2 (31 downto 16) <= std_logic_vector(dropCount6);
-
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress0C = '1') then
-                        --port6 statisticalInformation Receive EOP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation6(1));
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress10 = '1') then
-                        -- port6 statisticalInformation Transmit EOP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation6(0));
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress14 = '1') then
-                        -- port6 statisticalInformation Receive EEP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation6(3));
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress18 = '1') then
-                        -- port6 statisticalInformation Transmit EEP Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation6(2));
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress1C = '1') then
-                        -- port6 statisticalInformation Receive Byte Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation6(5));
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress20 = '1') then
-                        -- port6 statisticalInformation Transmit Byte Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation6(4));
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress24 = '1') then
-                        -- port6 statisticalInformation LinkUp Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation6(6));
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress28 = '1') then
-                        -- port6 statisticalInformation LinkDown Register.
-                        iStatisticalBuffer2 <= std_logic_vector(statisticalInformation6(7));
-
---**************************************************************************************
-
-                    elsif (iSelectStatisticalInformation0 = '1' and iLowAddress08 = '1') then
+                    if (iSelectStatisticalInformation(0) = '1' and iLowAddress08 = '1') then
                         -- Port-0 Link Status Register3.
-                        iDataOutBuffer (15 downto 0)  <= std_logic_vector(timeOutCount0);
-                        iDataOutBuffer (31 downto 16) <= std_logic_vector(dropCount0);
+                        iDataOutBuffer (15 downto 0)  <= std_logic_vector(timeOutCount(0));
+                        iDataOutBuffer (31 downto 16) <= std_logic_vector(dropCount(0));
 
 --**************************************************************************************
 
@@ -763,93 +422,31 @@ begin
                     ----------------------------------------------------------------------
                 when busStateRead1 =>
                     iAcknowledgeOut    <= '0';
-                    iErrorStatusClear1 <= '0';
-                    iErrorStatusClear2 <= '0';
-                    iErrorStatusClear3 <= '0';
-                    iErrorStatusClear4 <= '0';
-                    iErrorStatusClear5 <= '0';
-                    iErrorStatusClear6 <= '0';
+                    iErrorStatusClear  <= (others => '0');
                     iBusState          <= busStatewait0;
 
                     ----------------------------------------------------------------------
                     -- Write Register Select.
                     ----------------------------------------------------------------------
                 when busStateWrite0 =>
-                    if (iSelectStatisticalInformation1 = '1' and iLowAddress00 = '1') then
-                        -- Port-1 Link Control/Status Register.
-                        if (dataByteEnable (2) = '1') then
-                            iLinkControlRegister1 (0) <= iDataInBuffer (16);
-                            iLinkControlRegister1 (1) <= iDataInBuffer (17);
-                            iLinkControlRegister1 (2) <= iDataInBuffer (18);
-                            iSoftWareLinkReset1       <= iDataInBuffer (19);
+                    for i in 1 to cNumberOfInternalPort - 1 loop
+                        if (iSelectStatisticalInformation(i) = '1' and iLowAddress00 = '1') then
+                            -- Port-1 Link Control/Status Register.
+                            if (dataByteEnable (2) = '1') then
+                                iLinkControlRegister(i) (0) <= iDataInBuffer (16);
+                                iLinkControlRegister(i) (1) <= iDataInBuffer (17);
+                                iLinkControlRegister(i) (2) <= iDataInBuffer (18);
+                                iSoftWareLinkReset(i)      <= iDataInBuffer (19);
+                            end if;
+                            if (dataByteEnable (3) = '1') then
+                                iLinkControlRegister(i) (13 downto 8) <= iDataInBuffer (29 downto 24);
+                            end if;
                         end if;
-                        if (dataByteEnable (3) = '1') then
-                            iLinkControlRegister1 (13 downto 8) <= iDataInBuffer (29 downto 24);
-                        end if;
-
-                    elsif (iSelectStatisticalInformation2 = '1' and iLowAddress00 = '1') then
-                        -- Port-2 Link Control/Status Register.
-                        if (dataByteEnable (2) = '1') then
-                            iLinkControlRegister2 (0) <= iDataInBuffer (16);
-                            iLinkControlRegister2 (1) <= iDataInBuffer (17);
-                            iLinkControlRegister2 (2) <= iDataInBuffer (18);
-                            iSoftWareLinkReset2       <= iDataInBuffer (19);
-                        end if;
-                        if (dataByteEnable (3) = '1') then
-                            iLinkControlRegister2 (13 downto 8) <= iDataInBuffer (29 downto 24);
-                        end if;
-
-                    elsif (iSelectStatisticalInformation3 = '1' and iLowAddress00 = '1') then
-                                        -- Port-3 Link Control/Status Register.
-                        if (dataByteEnable (2) = '1') then
-                            iLinkControlRegister3 (0) <= iDataInBuffer (16);
-                            iLinkControlRegister3 (1) <= iDataInBuffer (17);
-                            iLinkControlRegister3 (2) <= iDataInBuffer (18);
-                            iSoftWareLinkReset3       <= iDataInBuffer (19);
-                        end if;
-                        if (dataByteEnable (3) = '1') then
-                            iLinkControlRegister3 (13 downto 8) <= iDataInBuffer (29 downto 24);
-                        end if;
-
-                    elsif (iSelectStatisticalInformation4 = '1' and iLowAddress00 = '1') then
-                        -- Port-4 Link Control/Status Register.
-                        if (dataByteEnable (2) = '1') then
-                            iLinkControlRegister4 (0) <= iDataInBuffer (16);
-                            iLinkControlRegister4 (1) <= iDataInBuffer (17);
-                            iLinkControlRegister4 (2) <= iDataInBuffer (18);
-                            iSoftWareLinkReset4       <= iDataInBuffer (19);
-                        end if;
-                        if (dataByteEnable (3) = '1') then
-                            iLinkControlRegister4 (13 downto 8) <= iDataInBuffer (29 downto 24);
-                        end if;
-
-                    elsif (iSelectStatisticalInformation5 = '1' and iLowAddress00 = '1') then
-                        -- Port-5 Link Control/Status Register.
-                        if (dataByteEnable (2) = '1') then
-                            iLinkControlRegister5 (0) <= iDataInBuffer (16);
-                            iLinkControlRegister5 (1) <= iDataInBuffer (17);
-                            iLinkControlRegister5 (2) <= iDataInBuffer (18);
-                            iSoftWareLinkReset5       <= iDataInBuffer (19);
-                        end if;
-                        if (dataByteEnable (3) = '1') then
-                            iLinkControlRegister5 (13 downto 8) <= iDataInBuffer (29 downto 24);
-                        end if;
-
-                    elsif (iSelectStatisticalInformation6 = '1' and iLowAddress00 = '1') then
-                        -- Port-6 Link Control/Status Register.
-                        if (dataByteEnable (2) = '1') then
-                            iLinkControlRegister6 (0) <= iDataInBuffer (16);
-                            iLinkControlRegister6 (1) <= iDataInBuffer (17);
-                            iLinkControlRegister6 (2) <= iDataInBuffer (18);
-                            iSoftWareLinkReset6       <= iDataInBuffer (19);
-                        end if;
-                        if (dataByteEnable (3) = '1') then
-                            iLinkControlRegister6 (13 downto 8) <= iDataInBuffer (29 downto 24);
-                        end if;
+                    end loop;
 
 --**************************************************************************************
 
-                    elsif (iSelectRouterRegister = '1' and iLowAddress00 = '1') then  --0900
+                    if (iSelectRouterRegister = '1' and iLowAddress00 = '1') then  --0900
                         -- LinkStatus3ClearRegister.
                         if (dataByteEnable (0) = '1') then
                             iDropCouterClear <= iDataInBuffer (0);
@@ -917,12 +514,7 @@ begin
                     -- Write Register END.
                     ----------------------------------------------------------------------
                 when busStateWrite1 =>
-                    iSoftWareLinkReset1                         <= '0';
-                    iSoftWareLinkReset2                         <= '0';
-                    iSoftWareLinkReset3                         <= '0';
-                    iSoftWareLinkReset4                         <= '0';
-                    iSoftWareLinkReset5                         <= '0';
-                    iSoftWareLinkReset6                         <= '0';
+                    iSoftWareLinkReset                          <= (others => '0');
                     iDropCouterClear                            <= '0';
                     iStatisticalInformationReceiveClearRegister <= '0';
                     iAcknowledgeOut                             <= '0';
@@ -947,8 +539,7 @@ begin
     iAcknowledge        <= routingTableAcknowledge or iAcknowledgeOut;
 
     iReadData <= routingTableReadData when iSelectRoutingTable = '1' else
-                 iStatisticalBuffer1 when iSelectStatisticalInformation1 = '1' or iSelectStatisticalInformation2 = '1' or iSelectStatisticalInformation3 = '1' else
-                 iStatisticalBuffer2 when iSelectStatisticalInformation4 = '1' or iSelectStatisticalInformation5 = '1' or iSelectStatisticalInformation6 = '1' else
+                 iStatisticalBuffer1 when or iSelectStatisticalInformation else
                  iDataOutBuffer;
 
 
@@ -970,31 +561,13 @@ begin
 --------------------------------------------------------------------------------
 -- longen link reset signal.
 --------------------------------------------------------------------------------
-    longPulse01 : SpaceWireRouterIPLongPulse port map (
-        clock => clock, reset => reset, pulseIn => iSoftWareLinkReset1, longPulseOut => linkReset1
-        );
-    longPulse02 : SpaceWireRouterIPLongPulse port map (
-        clock => clock, reset => reset, pulseIn => iSoftWareLinkReset2, longPulseOut => linkReset2
-        );
-    longPulse03 : SpaceWireRouterIPLongPulse port map (
-        clock => clock, reset => reset, pulseIn => iSoftWareLinkReset3, longPulseOut => linkReset3
-        );
-    longPulse04 : SpaceWireRouterIPLongPulse port map (
-        clock => clock, reset => reset, pulseIn => iSoftWareLinkReset4, longPulseOut => linkReset4
-        );
-    longPulse05 : SpaceWireRouterIPLongPulse port map (
-        clock => clock, reset => reset, pulseIn => iSoftWareLinkReset5, longPulseOut => linkReset5
-        );
-    longPulse06 : SpaceWireRouterIPLongPulse port map (
-        clock => clock, reset => reset, pulseIn => iSoftWareLinkReset6, longPulseOut => linkReset6
-        );
+    long_gen : for i in 1 to cNumberOfInternalPort - 1 generate
+        longPulse : SpaceWireRouterIPLongPulse port map (
+            clock => clock, reset => reset, pulseIn => iSoftWareLinkReset(i), longPulseOut => linkReset(i)
+            );
+    end generate;
 
-    linkControl1              <= iLinkControlRegister1;
-    linkControl2              <= iLinkControlRegister2;
-    linkControl3              <= iLinkControlRegister3;
-    linkControl4              <= iLinkControlRegister4;
-    linkControl5              <= iLinkControlRegister5;
-    linkControl6              <= iLinkControlRegister6;
+    linkControl               <= iLinkControlRegister;
     port0RMAPKey              <= iPort0RMAPKeyRegister;
     port0TargetLogicalAddress <= iPort0TargetLogicalAddressRegister;
     port0CRCRevision          <= iPort0CRCRevisionRegister;

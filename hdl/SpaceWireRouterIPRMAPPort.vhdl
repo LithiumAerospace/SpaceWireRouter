@@ -26,15 +26,18 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use ieee.numeric_std.all;
 
+library work;
+use work.SpaceWireRouterIPPackage.all;
+
 entity SpaceWireRouterIPRMAPPort is
     generic (
         gPortNumber           : std_logic_vector (7 downto 0) := x"00";
-        gNumberOfExternalPort : std_logic_vector (4 downto 0) := "00110");
+        gNumberOfExternalPort : std_logic_vector (4 downto 0) := cNumberOfExternalPort);
     port (
         clock                   : in  std_logic;
         reset                   : in  std_logic;
         -- switch info.
-        linkUp                  : in  std_logic_vector (6 downto 0);
+        linkUp                  : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
         timeOutEnable           : in  std_logic;
         timeOutCountValue       : in  std_logic_vector (19 downto 0);
         timeOutEEPOut           : out std_logic;
@@ -84,7 +87,7 @@ architecture behavioral of SpaceWireRouterIPRMAPPort is
             rmapKey                 : in  std_logic_vector (7 downto 0);
             crcRevision             : in  std_logic;
 --
-            linkUp                  : in  std_logic_vector (6 downto 0);
+            linkUp                  : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
 --
             timeOutEnable           : in  std_logic;
             timeOutCountValue       : in  std_logic_vector (19 downto 0);

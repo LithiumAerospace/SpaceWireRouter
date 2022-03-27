@@ -28,6 +28,8 @@ use ieee.numeric_std.all;
 
 library work;
 use work.SpaceWireCODECIPPackage.all;
+use work.SpaceWireRouterIPPackage.all;
+use work.SpaceWireRouterIPConfigurationPackage.all;
 
 entity SpaceWireRouterIPSpaceWirePort is
     generic (
@@ -40,7 +42,7 @@ entity SpaceWireRouterIPSpaceWirePort is
         receiveClock                : in  std_logic;
         reset                       : in  std_logic;
         -- switch info.
-        linkUp                      : in  std_logic_vector (6 downto 0);
+        linkUp                      : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
         -- router time out.
         timeOutEnable               : in  std_logic;
         timeOutCountValue           : in  std_logic_vector (19 downto 0);
@@ -359,20 +361,17 @@ begin
                 -- Transmit Request to DestinationPort.
                 ----------------------------------------------------------------------
                 when busStatedestination2 =>
-                    if ((iDestinationPortOut (4 downto 0) = "00000")
-                        or (linkUp (1) = '1' and iDestinationPortOut (4 downto 0) = "00001")
-                        or (linkUp (2) = '1' and iDestinationPortOut (4 downto 0) = "00010")
-                        or (linkUp (3) = '1' and iDestinationPortOut (4 downto 0) = "00011")
-                        or (linkUp (4) = '1' and iDestinationPortOut (4 downto 0) = "00100")
-                        or (linkUp (5) = '1' and iDestinationPortOut (4 downto 0) = "00101")
-                        or (linkUp (6) = '1' and iDestinationPortOut (4 downto 0) = "00110")) then
-                        iRequestOut <= '1';
-                        busState    <= busStateData0;
-                    else
-                        -- discard invalid addressed packet.
-                        iPacketDropped <= '1';
-                        busState       <= busStateDummy0;
-                    end if;
+                    -- discard invalid addressed packet.
+                    iPacketDropped <= '1';
+                    busState       <= busStateDummy0;
+
+                    for i in 0 to cNumberOfInternalPort - 1 loop
+                        if (linkUp (i) = '1' and iDestinationPortOut (4 downto 0) = cPort (i)) then
+                            iRequestOut <= '1';
+                            busState    <= busStateData0;
+                            exit;
+                        end if;
+                    end loop;
 
                 ----------------------------------------------------------------------
                 -- Wait Acknowledge.
@@ -387,21 +386,16 @@ begin
                 ----------------------------------------------------------------------
                 when busStateRoutingTable1 =>
                     iRoutingTableRequest <= '0';
-                    if (linkUp (0) = '1' and busMasterDataIn (0) = '1') then
-                        iDestinationPortOut <= x"00"; iRequestOut <= '1'; busState <= busStateRoutingTable2;
-                    elsif (linkUp (1) = '1' and busMasterDataIn (1) = '1') then
-                        iDestinationPortOut <= x"01"; iRequestOut <= '1'; busState <= busStateRoutingTable2;
-                    elsif (linkUp (2) = '1' and busMasterDataIn (2) = '1') then
-                        iDestinationPortOut <= x"02"; iRequestOut <= '1'; busState <= busStateRoutingTable2;
-                    elsif (linkUp (3) = '1' and busMasterDataIn (3) = '1') then
-                        iDestinationPortOut <= x"03"; iRequestOut <= '1'; busState <= busStateRoutingTable2;
-                    elsif (linkUp (4) = '1' and busMasterDataIn (4) = '1') then
-                        iDestinationPortOut <= x"04"; iRequestOut <= '1'; busState <= busStateRoutingTable2;
-                    elsif (linkUp (5) = '1' and busMasterDataIn (5) = '1') then
-                        iDestinationPortOut <= x"05"; iRequestOut <= '1'; busState <= busStateRoutingTable2;
-                    elsif (linkUp (6) = '1' and busMasterDataIn (6) = '1') then
-                        iDestinationPortOut <= x"06"; iRequestOut <= '1'; busState <= busStateRoutingTable2;
-                    else
+                    for i in 0 to cNumberOfInternalPort - 1 loop
+                        if (linkUp (i) = '1' and busMasterDataIn (i) = '1') then
+                            iDestinationPortOut <= std_logic_vector(to_unsigned(i, 8));
+                            iRequestOut <= '1';
+                            busState <= busStateRoutingTable2;
+                            exit;
+                        end if;
+                    end loop;
+
+                    if iRequestOut = '0' then
                         -- discard invalid addressed packet.
                         iPacketDropped <= '1';
                         busState       <= busStateDummy0;

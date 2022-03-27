@@ -25,13 +25,16 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
+library work;
+use work.SpaceWireRouterIPPackage.all;
+
 package SpaceWireRouterIPConfigurationPackage is
 --------------------------------------------------------------------------------
 -- Port-0 RMAP Logical Address & Key.
 --------------------------------------------------------------------------------
     constant cDefaultRMAPKey            : std_logic_vector (7 downto 0) := x"02";
     constant cDefaultRMAPLogicalAddress : std_logic_vector (7 downto 0) := x"FE";
--------------------------------------------------------------------------------- 
+--------------------------------------------------------------------------------
 
     constant cDeviceIDRevision    : std_logic_vector (31 downto 0) := x"40224950";
     constant cRouterIPRevision    : std_logic_vector (31 downto 0) := x"40220120";
@@ -56,39 +59,14 @@ package SpaceWireRouterIPConfigurationPackage is
     constant cLowAddress38 : std_logic_vector(3 downto 0) := "1110";
     constant cLowAddress3C : std_logic_vector(3 downto 0) := "1111";
 
-    constant cPort00 : std_logic_vector(4 downto 0) := "00000";
-    constant cPort01 : std_logic_vector(4 downto 0) := "00001";
-    constant cPort02 : std_logic_vector(4 downto 0) := "00010";
-    constant cPort03 : std_logic_vector(4 downto 0) := "00011";
-    constant cPort04 : std_logic_vector(4 downto 0) := "00100";
-    constant cPort05 : std_logic_vector(4 downto 0) := "00101";
-    constant cPort06 : std_logic_vector(4 downto 0) := "00110";
---Reserve
---      constant cPort07              : std_logic_vector(4 downto 0) := "00111";
---      constant cPort08              : std_logic_vector(4 downto 0) := "01000";
---      constant cPort09              : std_logic_vector(4 downto 0) := "01001";
---      constant cPort10              : std_logic_vector(4 downto 0) := "01010";
---      constant cPort11              : std_logic_vector(4 downto 0) := "01011";
---      constant cPort12              : std_logic_vector(4 downto 0) := "01100";
---      constant cPort13              : std_logic_vector(4 downto 0) := "01101";
---      constant cPort14              : std_logic_vector(4 downto 0) := "01110";
---      constant cPort15              : std_logic_vector(4 downto 0) := "01111";
---      constant cPort16              : std_logic_vector(4 downto 0) := "10000";
---      constant cPort17              : std_logic_vector(4 downto 0) := "10001";
---      constant cPort18              : std_logic_vector(4 downto 0) := "10010";
---      constant cPort19              : std_logic_vector(4 downto 0) := "10011";
---      constant cPort20              : std_logic_vector(4 downto 0) := "10100";
---      constant cPort21              : std_logic_vector(4 downto 0) := "10101";
---      constant cPort22              : std_logic_vector(4 downto 0) := "10110";
---      constant cPort23              : std_logic_vector(4 downto 0) := "10111";
---      constant cPort24              : std_logic_vector(4 downto 0) := "11000";
---      constant cPort25              : std_logic_vector(4 downto 0) := "11001";
---      constant cPort26              : std_logic_vector(4 downto 0) := "11010";
---      constant cPort27              : std_logic_vector(4 downto 0) := "11011";
---      constant cPort28              : std_logic_vector(4 downto 0) := "11100";
---      constant cPort29              : std_logic_vector(4 downto 0) := "11101";
---      constant cPort30              : std_logic_vector(4 downto 0) := "11110";
---      constant cPort31              : std_logic_vector(4 downto 0) := "11111";
+    type cPortArray is array (0 to 31) of std_logic_vector(4 downto 0);
+
+    constant cPort : cPortArray := (
+            "00000", "00001", "00010", "00011", "00100", "00101", "00110", "00111",
+            "01000", "01001", "01010", "01011", "01100", "01101", "01110", "01111",
+            "10000", "10001", "10010", "10011", "10100", "10101", "10110", "10111",
+            "11000", "11001", "11010", "11011", "11100", "11101", "11110", "11111"
+            );
 
 end SpaceWireRouterIPConfigurationPackage;
 

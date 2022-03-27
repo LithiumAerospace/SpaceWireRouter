@@ -241,6 +241,32 @@ begin
       errorStatus => errorStatus
     );
 
+
+  interface31 : SpaceWireCODECIP
+    port map (
+      clock => clock,
+      transmitClock => transmitClock,
+      receiveClock => receiveClock,
+      reset => reset,
+      transmitFIFOWriteEnable => '0',
+      receiveFIFOReadEnable => '0',
+      transmitFIFODataIn => "000000000",
+      tickIn => tickIn,
+      timeIn => timeIn,
+      controlFlagsIn => controlFlagsIn,
+      linkStart => '0',
+      linkDisable => '0',
+      autoStart => '1',
+      transmitClockDivideValue => "001001",
+      spaceWireDataIn    => routerToInterfaceData (31),
+      spaceWireStrobeIn  => routerToInterfaceStrobe (31),
+      spaceWireDataOut   => interfaceToRouterData (31),
+      spaceWireStrobeOut => interfaceToRouterStrobe (31),
+      statisticalInformationClear => '0',
+      linkStatus => linkStatus,
+      errorStatus => errorStatus
+    );
+
   router : SpaceWireRouterIP
     port map (
       clock => clock,

@@ -27,32 +27,46 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.numeric_std.all;
 
+library work;
+use work.SpaceWireCODECIPPackage.all;
+
 package SpaceWireRouterIPPackage is
 
-    constant cNumberOfInternalPort             : integer range 0 to 32          := 7;
-    constant cNumberOfExternalPort             : std_logic_vector (4 downto 0)  := "00110";   -- port 0 to 6.
+    constant cNumberOfInternalPort             : integer range 0 to 32          := 32;
+    constant cNumberOfExternalPort             : std_logic_vector (4 downto 0)  := std_logic_vector(to_unsigned(cNumberOfInternalPort - 1, 5));
     constant cRunStateTransmitClockDivideValue : std_logic_vector (5 downto 0)  := "001001";  -- transmitClock frequency / (cRunStateTransmitClockDivideValue + 1) = TransmitRate.
-    constant cTransmitTimeCodeEnable           : std_logic_vector (6 downto 0)  := "1111110";  -- enable time-code forwarding.
+    constant cTransmitTimeCodeEnable           : std_logic_vector (cNumberOfInternalPort - 1 downto 0) := (0 => '0', others => '1');  -- enable time-code forwarding.
     constant cRMAPCRCRevision                  : std_logic                      := '1';        -- (0:Rev.e, 1:Rev.f).
     constant cWatchdogTimerEnable              : std_logic                      := '0';        -- enable port occupetion timeout.
     constant cUseDevice                        : integer range 0 to 2           := 2;          -- 1 = Xilinx, 0 = Altera, 2 = Mock
     constant cPortBit                          : std_logic_vector (31 downto 0) := x"0000007F";
 --
+    type statisticalInformationArray is array (cNumberOfInternalPort - 1 downto 0) of bit32X8Array;
+    type bit32X9Array                is array (cNumberOfInternalPort + 1 downto 0) of std_logic_vector (31 downto 0); -- ports + user + control register
+    type bit8X9Array                 is array (cNumberOfInternalPort + 1 downto 0) of std_logic_vector (7 downto 0);
+    type bit4X9Array                 is array (cNumberOfInternalPort + 1 downto 0) of std_logic_vector (3 downto 0);
+    type bit8XPortArray              is array (cNumberOfInternalPort - 1 downto 0) of std_logic_vector(7 downto 0);
+    type unsigned16xPort             is array (cNumberOfInternalPort - 1 downto 0) of unsigned(15 downto 0);
+    type bit16xPortArray             is array (cNumberOfInternalPort - 1 downto 0) of std_logic_vector(15 downto 0);
+    type unsigned6xPortArray         is array (cNumberOfInternalPort - 1 downto 0) of unsigned(5 downto 0);
+    type portXPortArray              is array (cNumberOfInternalPort - 1 downto 0) of std_logic_vector (cNumberOfInternalPort - 1 downto 0);
+    type bit9XPortArray              is array (cNumberOfInternalPort - 1 downto 0) of std_logic_vector (8 downto 0);
+
     function select7x1 (
-        selectBit                                                     : std_logic_vector (6 downto 0);
-        select0, select1, select2, select3, select4, select5, select6 : std_logic
+        selectBit   : std_logic_vector (cNumberOfInternalPort - 1 downto 0);
+        selectArray : std_logic_vector (cNumberOfInternalPort - 1 downto 0)
         ) return std_logic;
 
 --
     function select7x1xVector8 (
-        selectVector                                                  : in std_logic_vector (6 downto 0);
-        select0, select1, select2, select3, select4, select5, select6 : in std_logic_vector (7 downto 0)
+        selectVector : in std_logic_vector (cNumberOfInternalPort - 1 downto 0);
+        selectArray  : in bit8XPortArray
         ) return std_logic_vector;
 
 --
     function select7x1xVector9 (
-        selectVector                                                  : std_logic_vector (6 downto 0);
-        select0, select1, select2, select3, select4, select5, select6 : std_logic_vector (8 downto 0)
+        selectVector : in std_logic_vector (cNumberOfInternalPort - 1 downto 0);
+        selectArray  : in bit9XPortArray
         ) return std_logic_vector;
 
 
@@ -61,45 +75,44 @@ end SpaceWireRouterIPPackage;
 package body SpaceWireRouterIPPackage is
 
     function select7x1 (
-        selectBit                                                     : std_logic_vector (6 downto 0);
-        select0, select1, select2, select3, select4, select5, select6 : std_logic) return std_logic is
+        selectBit   : std_logic_vector (cNumberOfInternalPort - 1 downto 0);
+        selectArray : std_logic_vector (cNumberOfInternalPort - 1 downto 0)) return std_logic is
     begin
-        return ((selectBit (0) and select0) or (selectBit (1) and select1) or (selectBit (2) and select2) or
-                (selectBit (3) and select3) or (selectBit (4) and select4) or (selectBit (5) and select5) or
-                (selectBit (6) and select6));
+        for i in 0 to cNumberOfInternalPort - 1 loop
+            if selectBit (i) = '1' then
+                return selectArray (i);
+            end if;
+        end loop;
+
+        return '0';
     end select7x1;
 
 
     function select7x1xVector8 (
-        selectVector                                                  : in std_logic_vector (6 downto 0);
-        select0, select1, select2, select3, select4, select5, select6 : in std_logic_vector (7 downto 0)) return std_logic_vector is
+        selectVector : in std_logic_vector (cNumberOfInternalPort - 1 downto 0);
+        selectArray  : in bit8XPortArray) return std_logic_vector is
     begin
-        if (selectVector = "0000001") then return select0;
-        elsif (selectVector = "0000010") then return select1;
-        elsif (selectVector = "0000100") then return select2;
-        elsif (selectVector = "0001000") then return select3;
-        elsif (selectVector = "0010000") then return select4;
-        elsif (selectVector = "0100000") then return select5;
-        elsif (selectVector = "1000000") then return select6;
-        else return "00000000";
-        end if;
+        for i in 0 to cNumberOfInternalPort - 1 loop
+            if selectVector (i) = '1' then
+                return selectArray (i);
+            end if;
+        end loop;
+
+        return "00000000";
     end select7x1xVector8;
 
 
     function select7x1xVector9 (
-        selectVector                                                  : std_logic_vector (6 downto 0);
-        select0, select1, select2, select3, select4, select5, select6 : std_logic_vector (8 downto 0)) return std_logic_vector is
+        selectVector : in std_logic_vector (cNumberOfInternalPort - 1 downto 0);
+        selectArray  : in bit9XPortArray) return std_logic_vector is
     begin
-        if (selectVector = "0000001") then return select0;
-        elsif (selectVector = "0000010") then return select1;
-        elsif (selectVector = "0000100") then return select2;
-        elsif (selectVector = "0001000") then return select3;
-        elsif (selectVector = "0010000") then return select4;
-        elsif (selectVector = "0100000") then return select5;
-        elsif (selectVector = "1000000") then return select6;
-        else return "000000000";
-        end if;
-    end select7x1xVector9;
+        for i in 0 to cNumberOfInternalPort - 1 loop
+            if selectVector (i) = '1' then
+                return selectArray (i);
+            end if;
+        end loop;
 
+        return "000000000";
+    end select7x1xVector9;
 
 end SpaceWireRouterIPPackage;

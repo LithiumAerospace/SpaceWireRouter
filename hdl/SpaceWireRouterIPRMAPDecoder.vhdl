@@ -25,6 +25,7 @@
 
 library work;
 use work.SpaceWireRouterIPPackage.all;
+use work.SpaceWireRouterIPConfigurationPackage.all;
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
@@ -39,7 +40,7 @@ entity SpaceWireRouterIPRMAPDecoder is
         rmapKey                 : in  std_logic_vector (7 downto 0);
         crcRevision             : in  std_logic;
 --
-        linkUp                  : in  std_logic_vector (6 downto 0);
+        linkUp                  : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
 --
         timeOutEnable           : in  std_logic;
         timeOutCountValue       : in  std_logic_vector (19 downto 0);
@@ -986,20 +987,18 @@ begin
                 -- Transmit Request to DestinationPort.
                 ----------------------------------------------------------------------
                 when replyStateDestinationPort =>
-                    if ((iDestinationPortOut (4 downto 0) = "00000")
-                        or (linkUp (1) = '1' and iDestinationPortOut (4 downto 0) = "00001")
-                        or (linkUp (2) = '1' and iDestinationPortOut (4 downto 0) = "00010")
-                        or (linkUp (3) = '1' and iDestinationPortOut (4 downto 0) = "00011")
-                        or (linkUp (4) = '1' and iDestinationPortOut (4 downto 0) = "00100")
-                        or (linkUp (5) = '1' and iDestinationPortOut (4 downto 0) = "00101")
-                        or (linkUp (6) = '1' and iDestinationPortOut (4 downto 0) = "00110")) then
-                        iRequestOut <= '1';
-                        replyState  <= replyStatePortRequest;
-                    else
-                        iPacketDropped   <= '1';
-                        iReplyProcessing <= '0';
-                        replyState       <= replyStateIdle;
-                    end if;
+                    -- discard invalid addressed packet.
+                    iPacketDropped <= '1';
+                    iReplyProcessing <= '0';
+                    replyState       <= replyStateIdle;
+
+                    for i in 0 to cNumberOfInternalPort - 1 loop
+                        if (linkUp (i) = '1' and iDestinationPortOut (4 downto 0) = cPort (i)) then
+                            iRequestOut <= '1';
+                            replyState    <= replyStatePortRequest;
+                            exit;
+                        end if;
+                    end loop;
 
                 ----------------------------------------------------------------------
                 -- wait the permission(grantedIn) from Arbiter.

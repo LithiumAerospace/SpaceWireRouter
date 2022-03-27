@@ -7,7 +7,7 @@ import util
 async def main(dut):
     await util.init(dut)
     await Timer(30, 'us')
-    for i in [1,2,3,4,10]:
+    for i in [1,2,3,4,31]:
         await portTest(dut, i)
         dut._log.info("Test passed on port {}".format(i))
 

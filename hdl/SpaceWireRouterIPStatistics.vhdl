@@ -26,50 +26,23 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use ieee.numeric_std.all;
 
-entity SpaceWireRouterIPStatisticsCounter7 is
-    port (
-        clock                 : in  std_logic;
-        reset                 : in  std_logic;
-        allCounterClear       : in  std_logic;
---
-        watchdogTimeOut0      : in  std_logic;
-        packetDropped0        : in  std_logic;
-        watchdogTimeOutCount0 : out unsigned (15 downto 0);
-        dropCount0            : out unsigned (15 downto 0);
---
-        watchdogTimeOut1      : in  std_logic;
-        packetDropped1        : in  std_logic;
-        watchdogTimeOutCount1 : out unsigned (15 downto 0);
-        dropCount1            : out unsigned (15 downto 0);
---
-        watchdogTimeOut2      : in  std_logic;
-        packetDropped2        : in  std_logic;
-        watchdogTimeOutCount2 : out unsigned (15 downto 0);
-        dropCount2            : out unsigned (15 downto 0);
---
-        watchdogTimeOut3      : in  std_logic;
-        packetDropped3        : in  std_logic;
-        watchdogTimeOutCount3 : out unsigned (15 downto 0);
-        dropCount3            : out unsigned (15 downto 0);
---
-        watchdogTimeOut4      : in  std_logic;
-        packetDropped4        : in  std_logic;
-        watchdogTimeOutCount4 : out unsigned (15 downto 0);
-        dropCount4            : out unsigned (15 downto 0);
---
-        watchdogTimeOut5      : in  std_logic;
-        packetDropped5        : in  std_logic;
-        watchdogTimeOutCount5 : out unsigned (15 downto 0);
-        dropCount5            : out unsigned (15 downto 0);
---
-        watchdogTimeOut6      : in  std_logic;
-        packetDropped6        : in  std_logic;
-        watchdogTimeOutCount6 : out unsigned (15 downto 0);
-        dropCount6            : out unsigned (15 downto 0)
-        );
-end SpaceWireRouterIPStatisticsCounter7;
+library work;
+use work.SpaceWireRouterIPPackage.all;
 
-architecture behavioral of SpaceWireRouterIPStatisticsCounter7 is
+entity SpaceWireRouterIPStatisticsCounter is
+    port (
+        clock                : in  std_logic;
+        reset                : in  std_logic;
+        allCounterClear      : in  std_logic;
+--
+        watchdogTimeOut      : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
+        packetDropped        : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
+        watchdogTimeOutCount : out unsigned16xPort;
+        dropCount            : out unsigned16xPort
+        );
+end SpaceWireRouterIPStatisticsCounter;
+
+architecture behavioral of SpaceWireRouterIPStatisticsCounter is
 
     component SpaceWireRouterIPStatisticCounter is
         port (
@@ -84,54 +57,14 @@ architecture behavioral of SpaceWireRouterIPStatisticsCounter7 is
 
 begin
 
-----------------------------------------------------------------------
--- Store Link Status Register3 the number of times to count of
--- TimeOutError and packetDrop of each Port
-----------------------------------------------------------------------
-    eepCount00 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => watchdogTimeOut0, count => watchdogTimeOutCount0);
-    eepCount01 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => watchdogTimeOut1, count => watchdogTimeOutCount1);
-    eepCount02 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => watchdogTimeOut2, count => watchdogTimeOutCount2);
-    eepCount03 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => watchdogTimeOut3, count => watchdogTimeOutCount3);
-    eepCount04 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => watchdogTimeOut4, count => watchdogTimeOutCount4);
-    eepCount05 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => watchdogTimeOut5, count => watchdogTimeOutCount5);
-    eepCount06 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => watchdogTimeOut6, count => watchdogTimeOutCount6);
-
-
-    packetDroppedCount10 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => packetDropped0, count => dropCount0);
-    packetDroppedCount11 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => packetDropped1, count => dropCount1);
-    packetDroppedCount12 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => packetDropped2, count => dropCount2);
-    packetDroppedCount13 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => packetDropped3, count => dropCount3);
-    packetDroppedCount14 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => packetDropped4, count => dropCount4);
-    packetDroppedCount15 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => packetDropped5, count => dropCount5);
-    packetDroppedCount16 : SpaceWireRouterIPStatisticCounter port map
-        (clock       => clock, reset => reset, counterClear => allCounterClear,
-         countEnable => packetDropped6, count => dropCount6);
+    count_gen : for i in 0 to (cNumberOfInternalPort - 1) generate
+        eepCount : SpaceWireRouterIPStatisticCounter port map
+            (clock       => clock, reset => reset, counterClear => allCounterClear,
+            countEnable => watchdogTimeOut(i), count => watchdogTimeOutCount(i));
+        packetDroppedCount : SpaceWireRouterIPStatisticCounter port map
+            (clock       => clock, reset => reset, counterClear => allCounterClear,
+            countEnable => packetDropped(i), count => dropCount(i));
+    end generate;
 
 end behavioral;
 
