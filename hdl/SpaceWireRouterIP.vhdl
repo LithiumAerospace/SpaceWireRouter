@@ -31,19 +31,16 @@ use IEEE.STD_LOGIC_1164.all;
 use ieee.numeric_std.all;
 
 entity SpaceWireRouterIP is
-    generic (
-        gNumberOfInternalPort : integer := cNumberOfInternalPort
-        );
     port (
         clock                       : in  std_logic;
         transmitClock               : in  std_logic;
         receiveClock                : in  std_logic;
         reset                       : in  std_logic;
         -- SpaceWire Signals.
-        spaceWireDataIn             : in  std_logic_vector(gNumberOfInternalPort - 1 downto 0);
-        spaceWireStrobeIn           : in  std_logic_vector(gNumberOfInternalPort - 1 downto 0);
-        spaceWireDataOut            : out std_logic_vector(gNumberOfInternalPort - 1 downto 0);
-        spaceWireStrobeOut          : out std_logic_vector(gNumberOfInternalPort - 1 downto 0);
+        spaceWireDataIn             : in  std_logic_vector(cNumberofInternalPort - 1 downto 0);
+        spaceWireStrobeIn           : in  std_logic_vector(cNumberofInternalPort - 1 downto 0);
+        spaceWireDataOut            : out std_logic_vector(cNumberofInternalPort - 1 downto 0);
+        spaceWireStrobeOut          : out std_logic_vector(cNumberofInternalPort - 1 downto 0);
         --
         statisticalInformationPort  : out statisticalInformationArray;
         --
@@ -68,7 +65,7 @@ architecture behavioral of SpaceWireRouterIP is
 --------------------------------------------------------------------------------
     component SpaceWireRouterIPSpaceWirePort is
         generic (
-            gNumberOfInternalPort : std_logic_vector (7 downto 0);
+            gNumberofInternalPort : std_logic_vector (7 downto 0);
             gNumberOfExternalPort : std_logic_vector (4 downto 0)
             );
         port (
@@ -191,15 +188,15 @@ architecture behavioral of SpaceWireRouterIP is
             reset                 : in  std_logic;
             allCounterClear       : in  std_logic;
 --
-            watchdogTimeOut        : in  std_logic_vector (gNumberOfInternalPort - 1 downto 0);
-            packetDropped          : in  std_logic_vector (gNumberOfInternalPort - 1 downto 0);
+            watchdogTimeOut        : in  std_logic_vector (cNumberofInternalPort - 1 downto 0);
+            packetDropped          : in  std_logic_vector (cNumberofInternalPort - 1 downto 0);
             watchdogTimeOutCount   : out unsigned16xPort;
             dropCount              : out unsigned16xPort
             );
     end component;
 
 
-    signal packetDropped     : std_logic_vector (gNumberOfInternalPort - 1 downto 0);
+    signal packetDropped     : std_logic_vector (cNumberofInternalPort - 1 downto 0);
     signal timeOutCount      : unsigned16xPort;
     signal packetDropCount   : unsigned16xPort;
 
@@ -236,23 +233,23 @@ architecture behavioral of SpaceWireRouterIP is
     signal iSelectDestinationPort            : portXPortArray;
     signal iSwitchPortNumber                 : portXPortArray;
 --
-    signal requestOut                        : std_logic_vector (gNumberOfInternalPort - 1 downto 0);
+    signal requestOut                        : std_logic_vector (cNumberofInternalPort - 1 downto 0);
     signal destinationPort                   : bit8XPortArray;
     signal sorcePortrOut                     : bit8XPortArray;
-    signal granted                           : std_logic_vector (gNumberOfInternalPort - 1 downto 0);
-    signal iReadyIn                          : std_logic_vector (gNumberOfInternalPort - 1 downto 0);
+    signal granted                           : std_logic_vector (cNumberofInternalPort - 1 downto 0);
+    signal iReadyIn                          : std_logic_vector (cNumberofInternalPort - 1 downto 0);
     signal dataOut                           : bit9XPortArray;
-    signal strobeOut                         : std_logic_vector (gNumberOfInternalPort - 1 downto 0);
-    signal iRequestIn                        : std_logic_vector (gNumberOfInternalPort - 1 downto 0);
+    signal strobeOut                         : std_logic_vector (cNumberofInternalPort - 1 downto 0);
+    signal iRequestIn                        : std_logic_vector (cNumberofInternalPort - 1 downto 0);
     signal iSorcePortIn                      : bit8XPortArray;
     signal iDataIn                           : bit9XPortArray;
-    signal iStrobeIn                         : std_logic_vector (gNumberOfInternalPort - 1 downto 0);
-    signal readyOut                          : std_logic_vector (gNumberOfInternalPort - 1 downto 0);
+    signal iStrobeIn                         : std_logic_vector (cNumberofInternalPort - 1 downto 0);
+    signal readyOut                          : std_logic_vector (cNumberofInternalPort - 1 downto 0);
 --
-    signal iTimeOutEEPIn                     : std_logic_vector (gNumberOfInternalPort - 1 downto 0);
-    signal timeOutEEPOut                     : std_logic_vector (gNumberOfInternalPort - 1 downto 0);
+    signal iTimeOutEEPIn                     : std_logic_vector (cNumberofInternalPort - 1 downto 0);
+    signal timeOutEEPOut                     : std_logic_vector (cNumberofInternalPort - 1 downto 0);
 --
-    signal routingSwitch                     : std_logic_vector ((gNumberOfInternalPort*gNumberOfInternalPort - 1) downto 0);
+    signal routingSwitch                     : std_logic_vector ((cNumberofInternalPort**2 - 1) downto 0);
 --
     signal routerTimeCode                    : std_logic_vector (7 downto 0);
     signal transmitTimeCodeEnable            : std_logic_vector (cNumberOfInternalPort - 1 downto 0);
@@ -373,8 +370,8 @@ architecture behavioral of SpaceWireRouterIP is
         port (
             clock   : in  std_logic;
             reset   : in  std_logic;
-            request : in  std_logic_vector (gNumberOfInternalPort downto 0);
-            granted : out std_logic_vector (gNumberOfInternalPort downto 0)
+            request : in  std_logic_vector (cNumberofInternalPort downto 0);
+            granted : out std_logic_vector (cNumberofInternalPort downto 0)
             );
     end component;
 
@@ -440,7 +437,7 @@ begin
         iSwitchPortNumber (i) <= routingSwitch (((i+1)*cNumberOfInternalPort) - 1 downto i*cNumberOfInternalPort);
     end generate;
 
-    spx : for i in 0 to gNumberOfInternalPort - 1 generate
+    spx : for i in 0 to cNumberofInternalPort - 1 generate
     begin
         iReadyIn (i) <= select7x1(iSelectDestinationPort (i), readyOut);
         iRequestIn (i) <= select7x1(iSwitchPortNumber (i), requestOut);

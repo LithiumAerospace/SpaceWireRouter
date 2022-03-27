@@ -66,19 +66,16 @@ architecture Behavioral of Tester is
   end component;
 
   component SpaceWireRouterIP is
-      generic (
-          gNumberOfInternalPort : integer := cNumberOfInternalPort
-          );
       port (
           clock                       : in  std_logic;
           transmitClock               : in  std_logic;
           receiveClock                : in  std_logic;
           reset                       : in  std_logic;
           -- SpaceWire Signals.
-          spaceWireDataIn             : in  std_logic_vector(gNumberOfInternalPort - 1 downto 0);
-          spaceWireStrobeIn           : in  std_logic_vector(gNumberOfInternalPort - 1 downto 0);
-          spaceWireDataOut            : out std_logic_vector(gNumberOfInternalPort - 1 downto 0);
-          spaceWireStrobeOut          : out std_logic_vector(gNumberOfInternalPort - 1 downto 0);
+          spaceWireDataIn             : in  std_logic_vector(cNumberOfInternalPort - 1 downto 0);
+          spaceWireStrobeIn           : in  std_logic_vector(cNumberOfInternalPort - 1 downto 0);
+          spaceWireDataOut            : out std_logic_vector(cNumberOfInternalPort - 1 downto 0);
+          spaceWireStrobeOut          : out std_logic_vector(cNumberOfInternalPort - 1 downto 0);
           --
           statisticalInformationPort  : out statisticalInformationArray;
           --
