@@ -31,7 +31,7 @@ entity SpaceWireRouterIPTimeOutCount is
         clock             : in  std_logic;
         reset             : in  std_logic;
         timeOutEnable     : in  std_logic;
-        timeOutCountValue : in  std_logic_vector (19 downto 0);
+        timeOutCountValue : in  unsigned (19 downto 0);
         clear             : in  std_logic;
         timeOutOverFlow   : out std_logic;
         timeOutEEP        : out std_logic
@@ -40,8 +40,8 @@ end SpaceWireRouterIPTimeOutCount;
 
 architecture behavioral of SpaceWireRouterIPTimeOutCount is
 
-    signal iMicroCount      : unsigned (11 downto 0);
-    signal iTimeOutCount    : unsigned (19 downto 0);
+    signal iMicroCount      : unsigned (11 downto 0) := (others => '0');
+    signal iTimeOutCount    : unsigned (19 downto 0) := (others => '0');
     signal iTimeOutOverFlow : std_logic;
     signal iTimeOutEEP      : std_logic;
 
@@ -63,7 +63,7 @@ begin
         elsif (clock'event and clock = '1') then
             if (clear = '1') then
                 iMicroCount      <= (others => '0');
-                iTimeOutCount    <= unsigned(timeOutCountValue);
+                iTimeOutCount    <= timeOutCountValue;
                 iTimeOutOverFlow <= '0';
             elsif (timeOutEnable = '1') then
                 iMicroCount <= iMicroCount + 1;
@@ -71,7 +71,7 @@ begin
                     if (iTimeOutCount = x"00000") then
                         iTimeOutOverFlow <= '1';
                         iTimeOutEEP      <= '1';
-                        iTimeOutCount    <= unsigned(timeOutCountValue);
+                        iTimeOutCount    <= timeOutCountValue;
                     else
                         iTimeOutCount <= iTimeOutCount - 1;
                     end if;

@@ -39,7 +39,7 @@ entity SpaceWireRouterIPRMAPPort is
         -- switch info.
         linkUp                  : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
         timeOutEnable           : in  std_logic;
-        timeOutCountValue       : in  std_logic_vector (19 downto 0);
+        timeOutCountValue       : in  unsigned (19 downto 0);
         timeOutEEPOut           : out std_logic;
         timeOutEEPIn            : in  std_logic;
         packetDropped           : out std_logic;
@@ -90,7 +90,7 @@ architecture behavioral of SpaceWireRouterIPRMAPPort is
             linkUp                  : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
 --
             timeOutEnable           : in  std_logic;
-            timeOutCountValue       : in  std_logic_vector (19 downto 0);
+            timeOutCountValue       : in  unsigned (19 downto 0);
             timeOutEEPOut           : out std_logic;
             timeOutEEPIn            : in  std_logic;
             packetDropped           : out std_logic;

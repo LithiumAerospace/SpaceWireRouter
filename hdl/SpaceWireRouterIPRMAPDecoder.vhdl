@@ -42,7 +42,7 @@ entity SpaceWireRouterIPRMAPDecoder is
         linkUp                  : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
 --
         timeOutEnable           : in  std_logic;
-        timeOutCountValue       : in  std_logic_vector (19 downto 0);
+        timeOutCountValue       : in  unsigned (19 downto 0);
         timeOutEEPOut           : out std_logic;
         timeOutEEPIn            : in  std_logic;
         packetDropped           : out std_logic;
@@ -220,12 +220,12 @@ architecture behavioral of SpaceWireRouterIPRMAPDecoder is
     signal iCommandCRCRomAddressBuffer : std_logic_vector (7 downto 0);
     signal commandCRCCalculateDataOut  : std_logic_vector (7 downto 0);
     signal iReceiveDataReady           : std_logic;
-    signal iCommandCRCRomAddress       : std_logic_vector (8 downto 0);
+    signal iCommandCRCRomAddress       : std_logic_vector (8 downto 0) := "000000000";
 
     signal iReplyCRCCalculateOut    : std_logic_vector (7 downto 0);
     signal iReplyCRCAddressBuffer   : std_logic_vector (7 downto 0);
     signal replyCRCCalculateDataOut : std_logic_vector (7 downto 0);
-    signal iReplyCRCRomAddress      : std_logic_vector (8 downto 0);
+    signal iReplyCRCRomAddress      : std_logic_vector (8 downto 0) := "000000000";
 
 
     type   registerArray is array (0 to 11) of std_logic_vector (7 downto 0);
@@ -236,7 +236,7 @@ architecture behavioral of SpaceWireRouterIPRMAPDecoder is
             clock             : in  std_logic;
             reset             : in  std_logic;
             timeOutEnable     : in  std_logic;
-            timeOutCountValue : in  std_logic_vector (19 downto 0);
+            timeOutCountValue : in  unsigned (19 downto 0);
             clear             : in  std_logic;
             timeOutOverFlow   : out std_logic;
             timeOutEEP        : out std_logic

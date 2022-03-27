@@ -44,7 +44,7 @@ entity SpaceWireRouterIPSpaceWirePort is
         linkUp                      : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
         -- router time out.
         timeOutEnable               : in  std_logic;
-        timeOutCountValue           : in  std_logic_vector (19 downto 0);
+        timeOutCountValue           : in  unsigned (19 downto 0);
         timeOutEEPOut               : out std_logic;
         timeOutEEPIn                : in  std_logic;
         packetDropped               : out std_logic;
@@ -194,7 +194,7 @@ architecture behavioral of SpaceWireRouterIPSpaceWirePort is
             clock             : in  std_logic;
             reset             : in  std_logic;
             timeOutEnable     : in  std_logic;
-            timeOutCountValue : in  std_logic_vector (19 downto 0);
+            timeOutCountValue : in  unsigned (19 downto 0);
             clear             : in  std_logic;
             timeOutOverFlow   : out std_logic;
             timeOutEEP        : out std_logic

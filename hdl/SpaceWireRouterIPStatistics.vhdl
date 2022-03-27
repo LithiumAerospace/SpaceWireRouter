@@ -37,8 +37,8 @@ entity SpaceWireRouterIPStatisticsCounter is
 --
         watchdogTimeOut      : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
         packetDropped        : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
-        watchdogTimeOutCount : out unsigned16xPort;
-        dropCount            : out unsigned16xPort
+        watchdogTimeOutCount : out unsigned16xPort := (others => (others => '0'));
+        dropCount            : out unsigned16xPort := (others => (others => '0'))
         );
 end SpaceWireRouterIPStatisticsCounter;
 

@@ -77,7 +77,7 @@ architecture behavioral of SpaceWireRouterIP is
             -- switch info.
             linkUp                      : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
             timeOutEnable               : in  std_logic;
-            timeOutCountValue           : in  std_logic_vector (19 downto 0);
+            timeOutCountValue           : in  unsigned (19 downto 0);
             timeOutEEPOut               : out std_logic;
             timeOutEEPIn                : in  std_logic;
             packetDropped               : out std_logic;
@@ -144,7 +144,7 @@ architecture behavioral of SpaceWireRouterIP is
             linkUp                  : in  std_logic_vector (cNumberOfInternalPort - 1 downto 0);
 --
             timeOutEnable           : in  std_logic;
-            timeOutCountValue       : in  std_logic_vector (19 downto 0);
+            timeOutCountValue       : in  unsigned (19 downto 0);
             timeOutEEPOut           : out std_logic;
             timeOutEEPIn            : in  std_logic;
             packetDropped           : out std_logic;
@@ -263,7 +263,7 @@ architecture behavioral of SpaceWireRouterIP is
     signal portLinkStatus                    : bit16xPortArray;
     signal portLinkStatus2                   : bit8XPortArray;
     signal portErrorStatus                   : bit8XPortArray;
-    signal portLinkControl                   : bit16xPortArray;
+    signal portLinkControl                   : bit16xPortArray := (others => (others => '0'));
 --
     signal portCreditCount                   : unsigned6xPortArray;
     signal portOutstandingCount              : unsigned6xPortArray;
@@ -271,7 +271,7 @@ architecture behavioral of SpaceWireRouterIP is
     signal portOutstandingCountSynchronized  : unsigned6xPortArray;
 --
     signal timeOutEnable                     : std_logic;
-    signal timeOutCountValue                 : std_logic_vector (19 downto 0);
+    signal timeOutCountValue                 : unsigned (19 downto 0) := (others => '0');
 --
     signal busMasterAddressOut               : bit32X9Array;
     signal busMasterDataOut                  : bit32X9Array;
@@ -344,7 +344,7 @@ architecture behavioral of SpaceWireRouterIP is
             dropCouterClear             : out std_logic;
 --
             timeOutEnable               : out std_logic;
-            timeOutCountValue           : out std_logic_vector (19 downto 0);
+            timeOutCountValue           : out unsigned (19 downto 0);
 --
             receiveTimeCode             : in  std_logic_vector (7 downto 0);
             transmitTimeCodeEnable      : out std_logic_vector (cNumberOfInternalPort - 1 downto 0);

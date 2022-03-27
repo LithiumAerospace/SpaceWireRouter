@@ -55,15 +55,15 @@ entity SpaceWireRouterIPRouterControlRegister is
         errorStatus                 : in  bit8XPortArray;
         linkReset                   : out std_logic_vector (cNumberOfInternalPort - 1 downto 0);
 --
-        creditCount                 : in  unsigned6xPortArray;
-        outstandingCount            : in  unsigned6xPortArray;
-        timeOutCount                : in  unsigned16xPort;
+        creditCount                 : in  unsigned6xPortArray := (others => (others => '0'));
+        outstandingCount            : in  unsigned6xPortArray := (others => (others => '0'));
+        timeOutCount                : in  unsigned16xPort := (others => (others => '0'));
 --
-        dropCount                   : in  unsigned16xPort;
+        dropCount                   : in  unsigned16xPort := (others => (others => '0'));
         dropCouterClear             : out std_logic;
 --
         timeOutEnable               : out std_logic;
-        timeOutCountValue           : out std_logic_vector (19 downto 0);
+        timeOutCountValue           : out unsigned (19 downto 0);
 --
         receiveTimeCode             : in  std_logic_vector (7 downto 0);
         transmitTimeCodeEnable      : out std_logic_vector (cNumberOfInternalPort - 1 downto 0);
@@ -235,7 +235,7 @@ begin
 
 
     timeOutEnable     <= iTimeOutEnableRegister;
-    timeOutCountValue <= iTimeOutCountValueRegister;
+    timeOutCountValue <= unsigned(iTimeOutCountValueRegister);
 
     errorStatus_gen : for i in 1 to (cNumberOfInternalPort - 1) generate
         errorStatus_item : SpaceWireRouterIPLatchedPulse8 port map (

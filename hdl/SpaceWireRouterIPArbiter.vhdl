@@ -149,7 +149,7 @@ end SpaceWireRouterIPRoundArbiter;
 
 architecture behavioral of SpaceWireRouterIPRoundArbiter is
     signal iGranted     : std_logic_vector (cNumberOfInternalPort - 1 downto 0);
-    signal iLastGranted : std_logic_vector (4 downto 0);
+    signal iLastGranted : std_logic_vector (4 downto 0) := "00000";
     signal iRequest     : std_logic_vector (cNumberOfInternalPort - 1 downto 0);
     signal ioccupied    : std_logic;
 begin

@@ -38,12 +38,12 @@ RMAP_CRCTable = [
 ]
 
 async def init(dut):
-    await cocotb.start(Clock(dut.clock, 20, 'ns').start())
-    await cocotb.start(Clock(dut.transmitClock, 10, 'ns').start())
-    await cocotb.start(Clock(dut.receiveClock, 6, 'ns').start())
     dut.reset.value = 1
     await Timer(20, 'ns')
     dut.reset.value = 0
+    await cocotb.start(Clock(dut.clock, 20, 'ns').start())
+    await cocotb.start(Clock(dut.transmitClock, 10, 'ns').start())
+    await cocotb.start(Clock(dut.receiveClock, 6, 'ns').start())
 
 async def read(dut, port):
     data = []
